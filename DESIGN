@@ -1,0 +1,38 @@
+DB Design
+---------
+
+Transactions
+  id
+  date
+  amount
+  import_description
+  description
+  account_id
+  budget_id
+
+Account
+  id
+  number
+  bank_id
+  name
+  tracked
+  type
+
+Statement
+  id
+  account_id
+  date
+  balance
+
+Budget
+  id
+  account_id
+  carryover
+  balance
+
+Allotment
+  budget_id
+  amount {AUTOMATIC, $}
+  start
+  periods {INFINITE, #}
+  recur {DAILY, WEEKLY, BIWEEKLY, MONTHLY, BIMONTHLY, QUARTERLY, BIANNUALLY, ANNUALLY}
