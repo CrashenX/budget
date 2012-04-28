@@ -14,8 +14,6 @@
 -- You should have received a copy of the GNU Affero General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-CREATE DATABASE budgetdb;
-
 CREATE TYPE account_type AS ENUM
 (
     'CHECKING',
@@ -35,7 +33,7 @@ CREATE TYPE transaction_type AS ENUM
     'XFER'
 );
 
-CREATE TYPE recur_type AS ENUm
+CREATE TYPE recur_type AS ENUM
 (
     'DAILY',
     'WEEKLY',
