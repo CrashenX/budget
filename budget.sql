@@ -14,6 +14,15 @@
 -- You should have received a copy of the GNU Affero General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+DROP TABLE allotments;
+DROP TABLE statements;
+DROP TABLE transactions;
+DROP TABLE budgets;
+DROP TABLE accounts;
+DROP TYPE recur_type;
+DROP TYPE transaction_type;
+DROP TYPE account_type;
+
 CREATE TYPE account_type AS ENUM
 (
     'CHECKING',
@@ -45,23 +54,10 @@ CREATE TYPE recur_type AS ENUM
     'ANNUALLY'
 );
 
--- TRANSACTION: table|id|account_id|date|type|amount|description
-CREATE TABLE transactions
-(
-    id varchar,
-    account_id varchar,
-    date date,
-    type transaction_type,
-    amount money,
-    import_description text,
-    description text,
-    budget_id integer
-);
-
 -- ACCOUNT: table|id|type|number|bank_id
 CREATE TABLE accounts
 (
-    id varchar,
+    id varchar primary key,
     type account_type,
     number varchar,
     bank_id varchar,
@@ -69,27 +65,41 @@ CREATE TABLE accounts
     tracked boolean
 );
 
+CREATE TABLE budgets
+(
+  id serial primary key,
+  account_id varchar references accounts,
+  carryover boolean,
+  balance money
+);
+
+-- TRANSACTION: table|id|account_id|date|type|amount|description
+CREATE TABLE transactions
+(
+    id varchar primary key,
+    account_id varchar references accounts,
+    date date,
+    type transaction_type,
+    amount money,
+    import_description text,
+    description text,
+    budget_id integer references budgets
+);
+
 -- STATEMENT: table|account_id|start_date|end_date|balance
 CREATE TABLE statements
 (
-    id serial,
-    account_id varchar,
+    id serial primary key,
+    account_id varchar references accounts,
     start_date date,
     end_date date,
     balance money
 );
 
-CREATE TABLE budgets
-(
-  id serial,
-  account_id varchar,
-  carryover boolean,
-  balance money
-);
-
 CREATE TABLE allotments
 (
-    budget_id integer,
+    id serial primary key,
+    budget_id integer references budgets,
     amount money,
     automatic boolean,
     start_date date,
