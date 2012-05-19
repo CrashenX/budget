@@ -20,13 +20,18 @@ require 'active_record'
 module BudgetDB
   def self.connect(password, db = "budget")
     ActiveRecord::Base.logger = Logger.new(STDERR)
-    ActiveRecord::Base.establish_connection(
-      :adapter  => "postgresql",
-      :host     => "localhost",
-      :username => `whoami`.strip,
-      :password => password,
-      :database => "budget"
-    )
+    begin
+      ActiveRecord::Base.establish_connection(
+        :adapter  => "postgresql",
+        :host     => "localhost",
+        :username => `whoami`.strip,
+        :password => password,
+        :database => "budget"
+      )
+      Account.table_exists? # Force connection now
+    rescue
+      raise
+    end
   end
 
   class Account < ActiveRecord::Base

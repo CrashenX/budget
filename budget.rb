@@ -21,7 +21,12 @@ require_relative 'cmdopts'
 if __FILE__ == $0
   options = CmdOpts.parse(ARGV)
 
-  db = BudgetDB.connect(options.password);
+  begin
+    db = BudgetDB.connect(options.password);
+  rescue Exception => err
+    puts "Database connection failed: " + err.to_s
+    exit 1
+  end
 
   if options.insert
     BudgetDB::Statement.create(:balance  => '123.45');
