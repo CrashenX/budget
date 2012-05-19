@@ -57,7 +57,8 @@ CREATE TYPE recur_type AS ENUM
 -- ACCOUNT: table|id|type|number|bank_id
 CREATE TABLE accounts
 (
-    id varchar primary key,
+    id serial primary key,
+    import_id varchar,
     type account_type,
     number varchar,
     bank_id varchar,
@@ -68,7 +69,7 @@ CREATE TABLE accounts
 CREATE TABLE budgets
 (
   id serial primary key,
-  account_id varchar references accounts,
+  account_id integer references accounts,
   carryover boolean,
   balance money
 );
@@ -76,8 +77,9 @@ CREATE TABLE budgets
 -- TRANSACTION: table|id|account_id|date|type|amount|description
 CREATE TABLE transactions
 (
-    id varchar primary key,
-    account_id varchar references accounts,
+    id serial primary key,
+    import_id varchar,
+    account_id integer references accounts,
     date date,
     type transaction_type,
     amount money,
@@ -90,7 +92,7 @@ CREATE TABLE transactions
 CREATE TABLE statements
 (
     id serial primary key,
-    account_id varchar references accounts,
+    account_id integer references accounts,
     start_date date,
     end_date date,
     balance money
