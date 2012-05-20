@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 require 'active_record'
+require 'pp'
 
 module BudgetDB
   def self.connect(password, db = "budget")
@@ -57,6 +58,55 @@ module BudgetDB
   class Allotment < ActiveRecord::Base
     # whitelist for mass assignment of attributes
     attr_accessible :amount, :automatic, :start_date, :ends, :periods, :recur
+  end
+
+  # Contract:
+  #   Requires that connection has been established to database
+  class Records
+      def initialize(path = "records.txt")
+        raise LoadError unless File.exists?(path)
+        @path = path
+      end
+
+      def load()
+        @records = Hash.new
+
+        file = File.open(@path)
+        cols = nil
+        table = nil
+
+        file.each_line do |line|
+          line.chomp!
+
+          # Extract columns
+          if('#' == line[0,1])
+            line = line[1,line.length-1].lstrip!
+            cols = line.split('|')
+            cols.shift
+            next
+          end
+
+          record = line.split('|')
+          table_name = record.shift.capitalize
+          raise Encoding::CompatibilityError unless record.length == cols.length
+
+          begin
+            table = BudgetDB.const_get(table_name).new
+            cols.each_index do |i|
+              puts cols[i] + " == fail" unless table.respond_to?(cols[i])
+              table.instance_variable_set("@#{cols[i]}", record[i])
+              puts cols[i] + ":" + table.instance_variable_get("@#{cols[i]}")
+            end
+            #table.save
+          rescue
+            raise Encoding::CompatibilityError
+          end
+
+        end
+
+        file.close
+
+      end
   end
 end
 
