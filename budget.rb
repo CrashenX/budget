@@ -29,6 +29,12 @@ if __FILE__ == $0
   end
 
   records = BudgetDB::Records.new
+  # begin
+  #   records.load
+  # rescue Exception => err
+  #     puts "Failed to load records: " + err.to_s
+  #     exit 1
+  # end
   records.load
 
   if options.insert
