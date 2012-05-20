@@ -4,3 +4,9 @@ DB Design
 Allotment
   amount {AUTOMATIC, $}
   periods {INFINITE, #}
+
+Every update to database
+  dump db
+  commit change
+  encrypt repo
+  backup encrypted file
