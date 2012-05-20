@@ -118,7 +118,12 @@ module BudgetDB
         end
 
         file.close
-
+        count = 0
+        @records.each_pair do |k,v|
+          count += 1 if v.class < ActiveRecord::Base
+        end
+        puts @records.length
+        puts count
       end
 
     private
@@ -133,17 +138,19 @@ module BudgetDB
 
     def add_record(row)
       key = row.respond_to?("import_id") ? row.import_id : get_iuid
-      if @records.has_key?(key)
-        # TODO: this will be nil two or more duplicates
-        a = @records[key].attributes_before_type_cast.to_s
+      if @records.has_key?(key) # collision; non-unique id in input data
+        is_table = @records[key].class < ActiveRecord::Base # if 1st collision
+        a = is_table ? @records[key].attributes_before_type_cast.to_s
+                     : @records[@records[key]].attributes_before_type_cast.to_s
         b = row.attributes_before_type_cast.to_s
         if a != b
           puts "WARNING: Duplicate record import id (import_id: #{key})"
-          if nil != @records[key]
-            @records[get_iuid_dup_key(key)] = @records[key]
-            @records[key] = nil
+          if is_table
+            new_key = get_iuid_dup_key(key)   # get unique key for original
+            @records[new_key] = @records[key] # move original to new key
+            @records[key] = new_key           # set to new key of original
           end
-          key = get_iuid_dup_key(key)
+          key = get_iuid_dup_key(key)         # get unique key for collision
         else
           raise "FATAL: Duplicate record: #{a}"
         end
