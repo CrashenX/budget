@@ -85,7 +85,6 @@ module BudgetDB
         cols = nil
         row = nil
         compat_exc = Exception.new("Incompatible records format")
-        dup_exc = Exception.new("Duplicate record encountered")
 
         file.each_line do |line|
           line.chomp!
@@ -106,9 +105,13 @@ module BudgetDB
           end
 
           cols.each_index do |i|
+            # TODO: make foreign key references, but probably not right here in
+            # the code
+
             #if '_id' == cols[i][-3,3]
             #    print row.id
             #end
+
             raise compat_exc unless row.respond_to?(cols[i])
             row.write_attribute(cols[i], record[i])
           end
@@ -118,12 +121,6 @@ module BudgetDB
         end
 
         file.close
-        count = 0
-        @records.each_pair do |k,v|
-          count += 1 if v.class < ActiveRecord::Base
-        end
-        puts @records.length
-        puts count
       end
 
     private
@@ -137,14 +134,14 @@ module BudgetDB
     end
 
     def add_record(row)
-      key = row.respond_to?("import_id") ? row.import_id : get_iuid
+      key = row.respond_to?("import") ? row.import : get_iuid
       if @records.has_key?(key) # collision; non-unique id in input data
         is_table = @records[key].class < ActiveRecord::Base # if 1st collision
         a = is_table ? @records[key].attributes_before_type_cast.to_s
                      : @records[@records[key]].attributes_before_type_cast.to_s
         b = row.attributes_before_type_cast.to_s
         if a != b
-          puts "WARNING: Duplicate record import id (import_id: #{key})"
+          puts "WARNING: Duplicate record import id (import: #{key})"
           if is_table
             new_key = get_iuid_dup_key(key)   # get unique key for original
             @records[new_key] = @records[key] # move original to new key
@@ -164,7 +161,7 @@ module BudgetDB
       cols = line.split('|')
       cols.shift
       cols.each_index do |i|
-        cols[i] = 'import_id' if 'id' == cols[i]
+        cols[i] = 'import' if 'id' == cols[i]
       end
       return cols
     end

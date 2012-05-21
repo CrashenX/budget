@@ -54,14 +54,12 @@ CREATE TYPE recur_type AS ENUM
     'ANNUALLY'
 );
 
--- ACCOUNT: table|id|type|number|bank_id
 CREATE TABLE accounts
 (
     id serial primary key,
-    import_id varchar,
+    import varchar,
     type account_type,
     number varchar,
-    bank_id varchar,
     name varchar,
     tracked boolean
 );
@@ -74,11 +72,10 @@ CREATE TABLE budgets
   balance money
 );
 
--- TRANSACTION: table|id|account_id|date|type|amount|description
 CREATE TABLE transactions
 (
     id serial primary key,
-    import_id varchar,
+    import varchar,
     account_id integer references accounts,
     date date,
     type transaction_type,
@@ -88,7 +85,6 @@ CREATE TABLE transactions
     budget_id integer references budgets
 );
 
--- STATEMENT: table|account_id|start_date|end_date|balance
 CREATE TABLE statements
 (
     id serial primary key,
