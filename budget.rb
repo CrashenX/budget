@@ -36,6 +36,7 @@ if __FILE__ == $0
   #     exit 1
   # end
   records.load
+  records.print
 
   if options.insert
     BudgetDB::Statement.create(:balance  => '123.45');

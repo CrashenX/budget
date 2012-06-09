@@ -80,6 +80,10 @@ module BudgetDB
         @records = Hash.new
       end
 
+      def print()
+        pp @records
+      end
+
       def load()
         file = File.open(@path)
         cols = nil
@@ -112,6 +116,7 @@ module BudgetDB
             #    print row.id
             #end
 
+            # ensure the column attribute exists in object, then set it
             raise compat_exc unless row.respond_to?(cols[i])
             row.write_attribute(cols[i], record[i])
           end
@@ -133,8 +138,26 @@ module BudgetDB
       return key + "-dup-" + get_iuid
     end
 
+    # Add record to the records hash
+    #
+    # If there is a duplicate import id, the original record is given a new
+    # unique key that indicates it was generated as a result of a collision.
+    # The first and all future collisions will also be given new keys. The
+    # import id key in the records table will refer to the new key of the
+    # original record for future duplicate record comparisons.
+    #
+    # Refactor?
+    #  - A more idiomatic way of handling collisions would be to have a hash of
+    #  lists. Collisions would be appended to the list.
+    #
+    # Requires:
+    #   - row should not be null
+    #
+    # Guarantees:
+    #   - the row will be added to the records hash (a duplicate record
+    #   exception will be raised if all fields are duplicated; not just id)
     def add_record(row)
-      key = row.respond_to?("import") ? row.import : get_iuid
+      key = row.respond_to?("import") ? row.import : get_iuid # set import id
       if @records.has_key?(key) # collision; non-unique id in input data
         is_table = @records[key].class < ActiveRecord::Base # if 1st collision
         a = is_table ? @records[key].attributes_before_type_cast.to_s
@@ -159,7 +182,7 @@ module BudgetDB
       return nil if nil == line
       line = line[1,line.length-1].lstrip!
       cols = line.split('|')
-      cols.shift
+      cols.shift # drop first field (table)
       cols.each_index do |i|
         cols[i] = 'import' if 'id' == cols[i]
       end
