@@ -1,0 +1,64 @@
+Fix references:
+
+  Currently the foreign keys are referencing the import ids not the actual ids.
+
+  e.g.
+
+    CREATE TABLE accounts
+    (
+        id serial primary key,
+        import varchar,
+        type account_type,
+        number varchar,
+        name varchar,
+        tracked boolean
+    );
+
+    CREATE TABLE statements
+    (
+        id serial primary key,
+        account_id integer references accounts,
+        start_date date,
+        end_date date,
+        balance money
+    );
+
+
+    irb(main):023:0> recs.instance_variable_get("@records").each_pair do |k,v|
+    irb(main):024:1* v.save
+    irb(main):025:1> end
+      SQL (0.5ms)   BEGIN
+      SQL (0.0ms)   PG::Error: ERROR: integer out of range
+    : INSERT INTO "statements" ("account_id", "start_date", "end_date", "balance") VALUES(6011007030224140, '2012-01-02', '2012-04-21', '-1477.29') RETURNING "id"
+      SQL (0.4ms)   ROLLBACK
+    ActiveRecord::StatementInvalid: PG::Error: ERROR:  integer out of range
+    : INSERT INTO "statements" ("account_id", "start_date", "end_date", "balance") VALUES(6011007030224140, '2012-01-02', '2012-04-21', '-1477.29') RETURNING "id"
+            from /usr/lib/ruby/1.9.1/active_record/connection_adapters/abstract_adapter.rb:219:in `rescue in log'
+            from /usr/lib/ruby/1.9.1/active_record/connection_adapters/abstract_adapter.rb:202:in `log'
+            from /usr/lib/ruby/1.9.1/active_record/connection_adapters/postgresql_adapter.rb:550:in `execute'
+            from /usr/lib/ruby/1.9.1/active_record/connection_adapters/postgresql_adapter.rb:1037:in `select_raw'
+            from /usr/lib/ruby/1.9.1/active_record/connection_adapters/postgresql_adapter.rb:1024:in `select'
+            from /usr/lib/ruby/1.9.1/active_record/connection_adapters/abstract/database_statements.rb:7:in `select_all'
+            from /usr/lib/ruby/1.9.1/active_record/connection_adapters/abstract/query_cache.rb:62:in `select_all_with_query_cache'
+            from /usr/lib/ruby/1.9.1/active_record/connection_adapters/abstract/database_statements.rb:13:in `select_one'
+            from /usr/lib/ruby/1.9.1/active_record/connection_adapters/abstract/database_statements.rb:19:in `select_value'
+            from /usr/lib/ruby/1.9.1/active_record/connection_adapters/postgresql_adapter.rb:490:in `insert'
+            from /usr/lib/ruby/1.9.1/active_record/base.rb:2908:in `create'
+            from /usr/lib/ruby/1.9.1/active_record/timestamp.rb:53:in `create_with_timestamps'
+            from /usr/lib/ruby/1.9.1/active_record/callbacks.rb:266:in `create_with_callbacks'
+            from /usr/lib/ruby/1.9.1/active_record/base.rb:2874:in `create_or_update'
+            from /usr/lib/ruby/1.9.1/active_record/callbacks.rb:250:in `create_or_update_with_callbacks'
+            from /usr/lib/ruby/1.9.1/active_record/base.rb:2538:in `save'
+            from /usr/lib/ruby/1.9.1/active_record/validations.rb:1078:in `save_with_validation'
+            from /usr/lib/ruby/1.9.1/active_record/dirty.rb:79:in `save_with_dirty'
+            from /usr/lib/ruby/1.9.1/active_record/transactions.rb:229:in `block in with_transaction_returning_status'
+            from /usr/lib/ruby/1.9.1/active_record/connection_adapters/abstract/database_statements.rb:136:in `transaction'
+            from /usr/lib/ruby/1.9.1/active_record/transactions.rb:182:in `transaction'
+            from /usr/lib/ruby/1.9.1/active_record/transactions.rb:228:in `with_transaction_returning_status'
+            from /usr/lib/ruby/1.9.1/active_record/transactions.rb:196:in `block in save_with_transactions'
+            from /usr/lib/ruby/1.9.1/active_record/transactions.rb:208:in `rollback_active_record_state!'
+            from /usr/lib/ruby/1.9.1/active_record/transactions.rb:196:in `save_with_transactions'
+            from (irb):24:in `block in irb_binding'
+            from (irb):23:in `each_pair'
+            from (irb):23
+            from /usr/bin/irb:12:in `<main>'irb(main):026:0>

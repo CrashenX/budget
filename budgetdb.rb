@@ -111,10 +111,10 @@ module BudgetDB
           cols.each_index do |i|
             # TODO: make foreign key references, but probably not right here in
             # the code
-
-            #if '_id' == cols[i][-3,3]
-            #    print row.id
-            #end
+            if '_id' == cols[i][-3,3]
+                puts "#{table_name} belongs_to #{cols[i][0...-3].capitalize}"
+            end
+            ###################################################################
 
             # ensure the column attribute exists in object, then set it
             raise compat_exc unless row.respond_to?(cols[i])
