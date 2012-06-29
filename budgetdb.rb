@@ -140,42 +140,25 @@ module BudgetDB
 
     # Add record to the records hash
     #
-    # If there is a duplicate import id, the original record is given a new
-    # unique key that indicates it was generated as a result of a collision.
-    # The first and all future collisions will also be given new keys. The
-    # import id key in the records table will refer to the new key of the
-    # original record for future duplicate record comparisons.
-    #
-    # Refactor?
-    #  - A more idiomatic way of handling collisions would be to have a hash of
-    #  lists. Collisions would be appended to the list.
-    #
     # Requires:
     #   - row should not be null
     #
     # Guarantees:
     #   - the row will be added to the records hash (a duplicate record
-    #   exception will be raised if all fields are duplicated; not just id)
+    #   exception will be raised if there is a duplicate)
     def add_record(row)
       key = row.respond_to?("import") ? row.import : get_iuid # set import id
       if @records.has_key?(key) # collision; non-unique id in input data
-        is_table = @records[key].class < ActiveRecord::Base # if 1st collision
-        a = is_table ? @records[key].attributes_before_type_cast.to_s
-                     : @records[@records[key]].attributes_before_type_cast.to_s
+        a = @records[key].attributes_before_type_cast.to_s
         b = row.attributes_before_type_cast.to_s
         if a != b
-          puts "WARNING: Duplicate record import id (import: #{key})"
-          if is_table
-            new_key = get_iuid_dup_key(key)   # get unique key for original
-            @records[new_key] = @records[key] # move original to new key
-            @records[key] = new_key           # set to new key of original
-          end
-          key = get_iuid_dup_key(key)         # get unique key for collision
+          raise "ERROR: Duplicate import id (import: #{key})"
         else
-          raise "FATAL: Duplicate record: #{a}"
+          raise "ERROR: Duplicate record: #{a}"
         end
       end
       @records[key] = row
+      return key
     end
 
     def extract_columns(line = nil)
