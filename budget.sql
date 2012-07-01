@@ -36,6 +36,7 @@ CREATE TYPE transaction_type AS ENUM
     'CHECK',
     'CREDIT',
     'DEBIT',
+    'DEP',
     'DIRECTDEP',
     'INT',
     'POS',
@@ -57,7 +58,7 @@ CREATE TYPE recur_type AS ENUM
 CREATE TABLE accounts
 (
     id serial primary key,
-    import varchar,
+    import varchar unique,
     type account_type,
     number varchar,
     name varchar,
@@ -66,8 +67,9 @@ CREATE TABLE accounts
 
 CREATE TABLE budgets
 (
+  -- needs name and unique constraint
   id serial primary key,
-  account_id integer references accounts,
+  account_id integer references accounts not null,
   carryover boolean,
   balance money
 );
@@ -75,23 +77,24 @@ CREATE TABLE budgets
 CREATE TABLE transactions
 (
     id serial primary key,
-    import varchar,
-    account_id integer references accounts,
+    import varchar unique,
+    account_id integer references accounts not null,
     date date,
     type transaction_type,
     amount money,
-    import_description text,
     description text,
+    display text,
     budget_id integer references budgets
 );
 
 CREATE TABLE statements
 (
     id serial primary key,
-    account_id integer references accounts,
+    account_id integer references accounts not null,
     start_date date,
     end_date date,
-    balance money
+    balance money,
+    unique (account_id, start_date, end_date)
 );
 
 CREATE TABLE allotments

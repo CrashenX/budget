@@ -16,11 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 require 'active_record'
+require 'ostruct'
 require 'pp'
 
 module BudgetDB
   def self.connect(password, db = "budget")
-    ActiveRecord::Base.logger = Logger.new(STDERR)
+    ActiveRecord::Base.logger = Logger.new("db.log")
     begin
       ActiveRecord::Base.establish_connection(
         :adapter  => "postgresql",
@@ -37,7 +38,9 @@ module BudgetDB
 
   class Account < ActiveRecord::Base
     # whitelist for mass assignment of attributes
+    ActiveRecord::Base.inheritance_column = "itype" # using type (default col)
     attr_accessible :name, :tracked
+    validates_uniqueness_of :import
     has_many :budgets
     has_many :transactions
     has_many :statements
@@ -53,7 +56,9 @@ module BudgetDB
 
   class Transaction < ActiveRecord::Base
     # whitelist for mass assignment of attributes
+    ActiveRecord::Base.inheritance_column = "itype" # using type (default col)
     attr_accessible :description
+    validates_uniqueness_of :import
     belongs_to :account
     belongs_to :budget
   end
@@ -61,6 +66,7 @@ module BudgetDB
   class Statement < ActiveRecord::Base
     # whitelist for mass assignment of attributes
     attr_accessible :balance
+    validates_uniqueness_of :account_id, :scope => [:start_date, :end_date]
     belongs_to :account
   end
 
@@ -73,62 +79,76 @@ module BudgetDB
   # Contract:
   #   Requires that connection has been established to database
   class Records
-      def initialize(path = "records.txt")
-        raise LoadError unless File.exists?(path)
-        @path = path
-        @iuid = 0 # instance unique id
-        @records = Hash.new
-      end
+    def initialize(path = "records.txt")
+      raise LoadError unless File.exists?(path)
+      @path = path
+      @iuid = 0 # instance unique id
+      @records = Hash.new
+      @belongs2 = Array.new
+    end
 
-      def print()
-        pp @records
-      end
+    def print()
+      pp @records
+    end
 
-      def load()
-        file = File.open(@path)
-        cols = nil
-        row = nil
-        compat_exc = Exception.new("Incompatible records format")
-
-        file.each_line do |line|
-          line.chomp!
-
-          if '#' == line[0,1]
-            cols = extract_columns(line)
-            next
-          end
-
-          record = line.split('|')
-          table_name = record.shift.capitalize # First field is table name
-          raise compat_exc unless record.length == cols.length
-
-          begin
-            row = BudgetDB.const_get(table_name).new
-          rescue
-            raise compat_exc
-          end
-
-          cols.each_index do |i|
-            # TODO: make foreign key references, but probably not right here in
-            # the code
-            if '_id' == cols[i][-3,3]
-                puts "#{table_name} belongs_to #{cols[i][0...-3].capitalize}"
-            end
-            ###################################################################
-
-            # ensure the column attribute exists in object, then set it
-            raise compat_exc unless row.respond_to?(cols[i])
+    def load()
+      file = File.open(@path)
+      cols = nil
+      row = nil
+      compat_exc = Exception.new("Incompatible records format")
+      file.each_line do |line|
+        fkeys = Array.new
+        line.chomp!
+        if '#' == line[0,1]
+          cols = extract_columns(line)
+          next
+        end
+        record = line.split('|')
+        table_name = record.shift.capitalize # First field is table name
+        raise compat_exc unless record.length == cols.length
+        begin
+          row = BudgetDB.const_get(table_name).new
+        rescue
+          raise compat_exc
+        end
+        cols.each_index do |i|
+          # ensure the column attribute exists in object, then set it
+          raise compat_exc unless row.respond_to?(cols[i])
+          if '_id' == cols[i][-3,3] # gather imported fks for conversion
+            fkeys.push([cols[i][0...-3], record[i]])
+          else
             row.write_attribute(cols[i], record[i])
           end
-
-          add_record(row)
-
         end
-
-        file.close
+        key = add_record(row)
+        fkeys.each do |fk|
+          @belongs2.push(OpenStruct.new(:import_id => key,
+            :ftable_name => fk.first, :fk_import_id => fk.last))
+        end
       end
+      file.close
+      establish_relationships
+    end
+
+    def save
+      @records.each_value do |r|
+        r.save
+      end
+    end
 
     private
+
+    def establish_relationships
+      @belongs2.each do |r|
+        table = r.ftable_name.capitalize
+        ftable = BudgetDB.const_get(table).find_by_import(r.fk_import_id)
+        if nil == ftable
+          ftable = @records[r.fk_import_id]
+        end
+        record = @records[r.import_id]
+        record.send("#{r.ftable_name}=", ftable)
+      end
+    end
 
     def get_iuid()
       return (@iuid += 1).to_s
