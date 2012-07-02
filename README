@@ -1,0 +1,18 @@
+Dev Notes
+---------
+
+su postgres -c psql postgres postgres
+  ALTER USER jesse SUPERUSER;   # Grant permission to CREATE FUNCTION
+  ALTER USER jesse NOSUPERUSER;
+  DROP DATABASE budget; CREATE DATABASE budget; GRANT ALL PRIVILEGES ON DATABASE budget to jesse;
+
+psql budget jesse
+  DROP FUNCTION set_budget() CASCADE; # Drop if already exists and you need to update
+  CREATE FUNCTION set_budget() RETURNS trigger AS '/tmp/budget_triggers.so' LANGUAGE C; 
+
+irb
+  load './budgetdb.rb'; db = BudgetDB.connect(""); records = BudgetDB::Records.new; records.load("records.txt"); records.load("budgets.txt")
+  records.save
+
+vim triggers.c
+  :! gcc -I/usr/include/postgresql/8.4/server -fpic -shared % -o budget_triggers.so
