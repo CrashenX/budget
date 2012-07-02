@@ -79,9 +79,7 @@ module BudgetDB
   # Contract:
   #   Requires that connection has been established to database
   class Records
-    def initialize(path = "records.txt")
-      raise LoadError unless File.exists?(path)
-      @path = path
+    def initialize()
       @iuid = 0 # instance unique id
       @records = Hash.new
       @belongs2 = Array.new
@@ -91,8 +89,9 @@ module BudgetDB
       pp @records
     end
 
-    def load()
-      file = File.open(@path)
+    def load(path = "records.txt")
+      raise LoadError unless File.exists?(path)
+      file = File.open(path)
       cols = nil
       row = nil
       compat_exc = Exception.new("Incompatible records format")
@@ -139,11 +138,15 @@ module BudgetDB
     private
 
     def establish_relationships
+      relation_exc = Exception.new("Invalid or missing foreign key")
       @belongs2.each do |r|
         table = r.ftable_name.capitalize
         ftable = BudgetDB.const_get(table).find_by_import(r.fk_import_id)
         if nil == ftable
           ftable = @records[r.fk_import_id]
+        end
+        if nil == ftable
+          throw relation_exc
         end
         record = @records[r.import_id]
         record.send("#{r.ftable_name}=", ftable)

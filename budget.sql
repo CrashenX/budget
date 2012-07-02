@@ -67,11 +67,11 @@ CREATE TABLE accounts
 
 CREATE TABLE budgets
 (
-  -- needs name and unique constraint
-  id serial primary key,
-  account_id integer references accounts not null,
-  carryover boolean,
-  balance money
+    id serial primary key,
+    account_id integer references accounts,
+    name varchar unique,
+    carryover boolean,
+    balance money
 );
 
 CREATE TABLE transactions
@@ -108,3 +108,8 @@ CREATE TABLE allotments
     periods integer,
     recur recur_type
 );
+
+CREATE TRIGGER set_trans_budget_id BEFORE INSERT OR UPDATE ON transactions
+    FOR EACH ROW EXECUTE PROCEDURE set_budget();
+
+INSERT INTO budgets values (0, NULL, 'UNKNOWN', true, '$0.00');
