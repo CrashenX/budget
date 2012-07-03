@@ -22,7 +22,7 @@ if __FILE__ == $0
   options = CmdOpts.parse(ARGV)
 
   begin
-    db = BudgetDB.connect(options.password);
+    db = BudgetDB.connect(options.password)
   rescue Exception => err
     puts "Database connection failed: " + err.to_s
     exit 1
