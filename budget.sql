@@ -14,6 +14,7 @@
 -- You should have received a copy of the GNU Affero General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+DROP TABLE rules;
 DROP TABLE allotments;
 DROP TABLE statements;
 DROP TABLE transactions;
@@ -68,6 +69,7 @@ CREATE TABLE accounts
 CREATE TABLE budgets
 (
     id serial primary key,
+    import varchar unique,
     account_id integer references accounts,
     name varchar unique,
     carryover boolean,
@@ -109,7 +111,22 @@ CREATE TABLE allotments
     recur recur_type
 );
 
+CREATE TABLE rules
+(
+    id serial primary key,
+    budget_id integer references budgets not null,
+    account_id integer references accounts,
+    transaction_id integer references transactions,
+    rank integer not null,
+    min_amount money,
+    max_amount money,
+    before date,
+    after date,
+    contains varchar,
+    type transaction_type
+);
+
 CREATE TRIGGER set_trans_budget_id BEFORE INSERT OR UPDATE ON transactions
     FOR EACH ROW EXECUTE PROCEDURE set_budget();
 
-INSERT INTO budgets values (0, NULL, 'UNKNOWN', true, '$0.00');
+INSERT INTO budgets values (0, 'unknown', NULL, 'UNKNOWN', true, '$0.00');

@@ -76,6 +76,15 @@ module BudgetDB
     belongs_to :budget
   end
 
+  class Rule < ActiveRecord::Base
+    # whitelist for mass assignment of attributes
+    ActiveRecord::Base.inheritance_column = "itype" # using type (default col)
+    attr_accessible :rank, :min_amount, :max_amount, :before, :after, :contains, :type
+    belongs_to :budget
+    belongs_to :account
+    belongs_to :transaction
+  end
+
   # Contract:
   #   Requires that connection has been established to database
   class Records
