@@ -125,6 +125,3 @@ CREATE TABLE rules
     contains varchar,
     type transaction_type
 );
-
-CREATE TRIGGER set_trans_budget_id BEFORE INSERT OR UPDATE ON transactions
-    FOR EACH ROW EXECUTE PROCEDURE set_budget();
