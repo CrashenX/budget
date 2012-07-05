@@ -128,5 +128,3 @@ CREATE TABLE rules
 
 CREATE TRIGGER set_trans_budget_id BEFORE INSERT OR UPDATE ON transactions
     FOR EACH ROW EXECUTE PROCEDURE set_budget();
-
-INSERT INTO budgets values (0, 'unknown', NULL, 'UNKNOWN', true, '$0.00');
