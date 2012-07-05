@@ -114,10 +114,11 @@ CREATE TABLE allotments
 CREATE TABLE rules
 (
     id serial primary key,
+    prev integer references rules,
+    next integer references rules,
     budget_id integer references budgets not null,
     account_id integer references accounts,
     transaction_id integer references transactions,
-    rank integer not null,
     min_amount money,
     max_amount money,
     before date,
