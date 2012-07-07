@@ -20,6 +20,7 @@ require 'ostruct'
 require 'pp'
 
 module BudgetDB
+  # Connect to the database
   def self.connect(password, db = "budget")
     ActiveRecord::Base.logger = Logger.new("db.log")
     begin
@@ -36,6 +37,7 @@ module BudgetDB
     end
   end
 
+  # Save the database
   def self.save(message, db = "budget", dir = "history")
     begin
       file = db + ".sql"
@@ -138,6 +140,7 @@ module BudgetDB
       pp @records
     end
 
+    # Load all of the transactions from the specified file
     def load(path = "records.txt")
       raise LoadError unless File.exists?(path)
       file = File.open(path)
@@ -178,6 +181,7 @@ module BudgetDB
       establish_relationships
     end
 
+    # Save the loaded records to the database
     def save
       @records.each_value do |r|
         r.save
@@ -186,6 +190,7 @@ module BudgetDB
 
     private
 
+    # Establish relationships between tables (set foreign keys)
     def establish_relationships
       relation_exc = Exception.new("Invalid or missing foreign key")
       @belongs2.each do |r|
@@ -202,12 +207,9 @@ module BudgetDB
       end
     end
 
+    # Get an instance unique id
     def get_iuid()
       return (@iuid += 1).to_s
-    end
-
-    def get_iuid_dup_key(key)
-      return key + "-dup-" + get_iuid
     end
 
     # Add record to the records hash
