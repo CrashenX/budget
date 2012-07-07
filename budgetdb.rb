@@ -36,6 +36,19 @@ module BudgetDB
     end
   end
 
+  def self.save(message, db = "budget", dir = "history")
+    begin
+      file = db + ".sql"
+      system("pg_dump", "-f", "#{dir}/#{file}", db)
+      Dir.chdir(dir) do
+        system("git", "add", file)
+        system("git", "commit", "-m", message)
+      end
+    rescue
+      raise
+    end
+  end
+
   class Account < ActiveRecord::Base
     # whitelist for mass assignment of attributes
     ActiveRecord::Base.inheritance_column = "itype" # using type (default col)
