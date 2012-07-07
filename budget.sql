@@ -46,6 +46,32 @@ CREATE TYPE recur_type AS ENUM
     'ANNUALLY'
 );
 
+CREATE TYPE condition_key AS ENUM
+(
+    'account_id',
+    'transaction_id',
+    'date',
+    'type',
+    'amount',
+    'description'
+);
+
+CREATE TYPE action_key AS ENUM
+(
+    'budget_id',
+    'display'
+);
+
+CREATE TYPE operator AS ENUM
+(
+    '<',
+    '>',
+    '<=',
+    '>=',
+    '=',
+    'LIKE'
+);
+
 CREATE TABLE accounts
 (
     id serial primary key,
@@ -103,22 +129,23 @@ CREATE TABLE allotments
 CREATE TABLE rules
 (
     id serial primary key,
-    account_id integer references accounts,
-    transaction_id integer references transactions,
-    before date,
-    after date,
-    contains varchar,
-    min_amount money,
-    max_amount money,
-    type transaction_type,
-    budget_id integer references budgets not null,
-    display varchar not null
+    prev integer references rules,
+    next integer references rules
 );
 
-CREATE TABLE locations
+CREATE TABLE conditions
 (
     id serial primary key,
     rules_id integer references rules not null,
-    prev integer references locations,
-    next integer references locations
+    key condition_key not null,
+    op operator not null,
+    value varchar not null
+);
+
+CREATE TABLE actions
+(
+    id serial primary key,
+    rules_id integer references rules not null,
+    key action_key not null,
+    value varchar not null
 );

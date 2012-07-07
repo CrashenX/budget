@@ -92,18 +92,22 @@ module BudgetDB
   end
 
   class Rule < ActiveRecord::Base
-    ActiveRecord::Base.inheritance_column = "itype" # using type (default col)
-    # whitelist for mass assignment of attributes
-    attr_accessible :before, :after, :contains, :min_amount, :max_amount, :type
-    belongs_to :budget
-    belongs_to :account
-    belongs_to :transaction
+    has_many :conditions
+    has_many :rules
   end
 
-  class Location < ActiveRecord::Base
+  class Condition < ActiveRecord::Base
+    # whitelist for mass assignment of attributes
+    attr_accessible :key, :op, :value
     belongs_to :rule
-    belongs_to :location
   end
+
+  class Action < ActiveRecord::Base
+    # whitelist for mass assignment of attributes
+    attr_accessible :key, :value
+    belongs_to :rule
+  end
+
 
   # Contract:
   #   Requires that connection has been established to database

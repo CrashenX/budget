@@ -14,13 +14,17 @@
 -- You should have received a copy of the GNU Affero General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-DROP TABLE locations;
+DROP TABLE conditions;
+DROP TABLE actions;
 DROP TABLE rules;
 DROP TABLE allotments;
 DROP TABLE statements;
 DROP TABLE transactions;
 DROP TABLE budgets;
 DROP TABLE accounts;
+DROP TYPE condition_key;
+DROP TYPE action_key;
+DROP TYPE operator;
 DROP TYPE recur_type;
 DROP TYPE transaction_type;
 DROP TYPE account_type;
