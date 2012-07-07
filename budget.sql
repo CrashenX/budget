@@ -14,6 +14,7 @@
 -- You should have received a copy of the GNU Affero General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+DROP TABLE rules_order;
 DROP TABLE rules;
 DROP TABLE allotments;
 DROP TABLE statements;
@@ -69,7 +70,6 @@ CREATE TABLE accounts
 CREATE TABLE budgets
 (
     id serial primary key,
-    import varchar unique,
     account_id integer references accounts,
     name varchar unique,
     carryover boolean,
@@ -114,15 +114,22 @@ CREATE TABLE allotments
 CREATE TABLE rules
 (
     id serial primary key,
-    prev integer references rules,
-    next integer references rules,
-    budget_id integer references budgets not null,
     account_id integer references accounts,
     transaction_id integer references transactions,
-    min_amount money,
-    max_amount money,
     before date,
     after date,
     contains varchar,
-    type transaction_type
+    min_amount money,
+    max_amount money,
+    type transaction_type,
+    budget_id integer references budgets not null,
+    display varchar not null
+);
+
+CREATE TABLE rules_order
+(
+    id serial primary key,
+    rules_id integer references rules not null,
+    prev integer references rules_order,
+    next integer references rules_order
 );
