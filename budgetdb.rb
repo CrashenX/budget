@@ -50,8 +50,8 @@ module BudgetDB
   end
 
   class Account < ActiveRecord::Base
-    # whitelist for mass assignment of attributes
     ActiveRecord::Base.inheritance_column = "itype" # using type (default col)
+    # whitelist for mass assignment of attributes
     attr_accessible :name, :tracked
     validates_uniqueness_of :import
     has_many :budgets
@@ -68,9 +68,9 @@ module BudgetDB
   end
 
   class Transaction < ActiveRecord::Base
-    # whitelist for mass assignment of attributes
     ActiveRecord::Base.inheritance_column = "itype" # using type (default col)
-    attr_accessible :description
+    # whitelist for mass assignment of attributes
+    attr_accessible :display
     validates_uniqueness_of :import
     belongs_to :account
     belongs_to :budget
@@ -78,7 +78,6 @@ module BudgetDB
 
   class Statement < ActiveRecord::Base
     # whitelist for mass assignment of attributes
-    attr_accessible :balance
     validates_uniqueness_of :account_id, :scope => [:start_date, :end_date]
     belongs_to :account
   end
@@ -90,9 +89,9 @@ module BudgetDB
   end
 
   class Rule < ActiveRecord::Base
-    # whitelist for mass assignment of attributes
     ActiveRecord::Base.inheritance_column = "itype" # using type (default col)
-    attr_accessible :rank, :min_amount, :max_amount, :before, :after, :contains, :type
+    # whitelist for mass assignment of attributes
+    attr_accessible :before, :after, :contains, :min_amount, :max_amount, :type
     belongs_to :budget
     belongs_to :account
     belongs_to :transaction
