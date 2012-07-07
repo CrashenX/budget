@@ -14,17 +14,6 @@
 -- You should have received a copy of the GNU Affero General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-DROP TABLE rules_order;
-DROP TABLE rules;
-DROP TABLE allotments;
-DROP TABLE statements;
-DROP TABLE transactions;
-DROP TABLE budgets;
-DROP TABLE accounts;
-DROP TYPE recur_type;
-DROP TYPE transaction_type;
-DROP TYPE account_type;
-
 CREATE TYPE account_type AS ENUM
 (
     'CHECKING',
