@@ -64,6 +64,7 @@ module BudgetDB
   class Budget < ActiveRecord::Base
     # whitelist for mass assignment of attributes
     attr_accessible :carryover
+    validates_uniqueness_of :name
     belongs_to :account
     has_many :transactions
     has_many :allotments
