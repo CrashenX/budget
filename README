@@ -12,6 +12,7 @@ psql budget jesse
 
 irb
   load './budgetdb.rb'; db = BudgetDB.connect(""); records = BudgetDB::Records.new; records.load("records.txt"); records.load("budgets.txt")
+  load './budgetdb.rb'; db = BudgetDB.connect(""); rules = BudgetDB::Classify.new; rules.load
   records.save
 
 vim triggers.c
