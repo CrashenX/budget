@@ -126,10 +126,10 @@ CREATE TABLE rules
     display varchar not null
 );
 
-CREATE TABLE rules_order
+CREATE TABLE locations
 (
     id serial primary key,
     rules_id integer references rules not null,
-    prev integer references rules_order,
-    next integer references rules_order
+    prev integer references locations,
+    next integer references locations
 );
