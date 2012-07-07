@@ -97,6 +97,34 @@ module BudgetDB
     belongs_to :transaction
   end
 
+  class Location < ActiveRecord::Base
+    belongs_to :rule
+    belongs_to :location
+  end
+
+  # Contract:
+  #   Requires that connection has been established to database
+  class Classify
+    def initialize()
+      @rules = Array.new
+    end
+
+    # Load all of the rules (in order) from the database
+    def load()
+      first = BudgetDB::Location.find_by_prev(nil)
+      id = first ? first.id : nil
+      while nil != id
+        location = BudgetDB::Location.find_by_id(id)
+        raise ActiveRecord::RecordNotFound if nil == location
+        rule = BudgetDB::Rule.find_by_id(location.rules_id)
+        raise ActiveRecord::RecordNotFound if nil == rule
+        @rules.push(rule);
+        id = location.next
+      end
+    end
+
+  end
+
   # Contract:
   #   Requires that connection has been established to database
   class Records
