@@ -113,11 +113,11 @@ module BudgetDB
   #   Requires that connection has been established to database
   class Classify
     def initialize()
-      @rules = Array.new
     end
 
     # Load all of the rules (in order) from the database
     def load()
+      rules = Array.new
       first = BudgetDB::Rule.find_by_prev(nil)
       id = first ? first.id : nil
       while nil != id
@@ -127,11 +127,11 @@ module BudgetDB
         raise ActiveRecord::RecordNotFound if 0 == conditions.length
         actions = BudgetDB::Action.find_all_by_rules_id(id)
         raise ActiveRecord::RecordNotFound if 0 == actions.length
-        @rules.push(OpenStruct.new(:conditions => conditions,
-                                   :actions => actions))
+        rules.push(OpenStruct.new(:conditions => conditions,
+                                  :actions => actions))
         id = rule.next
       end
-      #apply_rule(@rules.first)
+      return rules
     end
 
     def apply_rule(rule)
@@ -139,10 +139,9 @@ module BudgetDB
       set   = Array.new
       where.push rule.conditions.map{|c| c.key+" "+c.op+" ?"}.join(" and ")
       where += rule.conditions.map{|c| c.value}
-      set.push rule.actions.map{|c| c.key + " ?"}.join(", ")
+      set.push rule.actions.map{|c| c.key + " = ?"}.join(", ")
       set += rule.actions.map{|c| c.value}
-      #puts where.to_s
-      #puts set.to_s
+      BudgetDB::Transaction.update_all set, where
     end
   end
 
