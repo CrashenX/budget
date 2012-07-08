@@ -64,8 +64,6 @@ CREATE TYPE action_key AS ENUM
 
 CREATE TYPE operator AS ENUM
 (
-    '<',
-    '>',
     '<=',
     '>=',
     '=',
