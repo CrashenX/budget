@@ -118,18 +118,32 @@ module BudgetDB
 
     # Load all of the rules (in order) from the database
     def load()
-      first = BudgetDB::Location.find_by_prev(nil)
+      first = BudgetDB::Rule.find_by_prev(nil)
       id = first ? first.id : nil
       while nil != id
-        location = BudgetDB::Location.find_by_id(id)
-        raise ActiveRecord::RecordNotFound if nil == location
-        rule = BudgetDB::Rule.find_by_id(location.rules_id)
+        rule = BudgetDB::Rule.find_by_id(id)
         raise ActiveRecord::RecordNotFound if nil == rule
-        @rules.push(rule);
-        id = location.next
+        conditions = BudgetDB::Condition.find_all_by_rules_id(id)
+        raise ActiveRecord::RecordNotFound if 0 == conditions.length
+        actions = BudgetDB::Action.find_all_by_rules_id(id)
+        raise ActiveRecord::RecordNotFound if 0 == actions.length
+        @rules.push(OpenStruct.new(:conditions => conditions,
+                                   :actions => actions))
+        id = rule.next
       end
+      #apply_rule(@rules.first)
     end
 
+    def apply_rule(rule)
+      where = Array.new
+      set   = Array.new
+      where.push rule.conditions.map{|c| c.key+" "+c.op+" ?"}.join(" and ")
+      where += rule.conditions.map{|c| c.value}
+      set.push rule.actions.map{|c| c.key + " ?"}.join(", ")
+      set += rule.actions.map{|c| c.value}
+      #puts where.to_s
+      #puts set.to_s
+    end
   end
 
   # Contract:
