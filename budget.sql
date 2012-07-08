@@ -134,7 +134,7 @@ CREATE TABLE rules
 CREATE TABLE conditions
 (
     id serial primary key,
-    rules_id integer references rules not null,
+    rule_id integer references rules not null,
     key condition_key not null,
     op operator not null,
     value varchar not null
@@ -143,7 +143,7 @@ CREATE TABLE conditions
 CREATE TABLE actions
 (
     id serial primary key,
-    rules_id integer references rules not null,
+    rule_id integer references rules not null,
     key action_key not null,
     value varchar not null
 );

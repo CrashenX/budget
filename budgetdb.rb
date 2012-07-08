@@ -112,9 +112,6 @@ module BudgetDB
   # Contract:
   #   Requires that connection has been established to database
   class Classify
-    def initialize()
-    end
-
     # Load all of the rules (in order) from the database
     def load()
       rules = Array.new
@@ -123,15 +120,34 @@ module BudgetDB
       while nil != id
         rule = BudgetDB::Rule.find_by_id(id)
         raise ActiveRecord::RecordNotFound if nil == rule
-        conditions = BudgetDB::Condition.find_all_by_rules_id(id)
+        conditions = BudgetDB::Condition.find_all_by_rule_id(id)
         raise ActiveRecord::RecordNotFound if 0 == conditions.length
-        actions = BudgetDB::Action.find_all_by_rules_id(id)
+        actions = BudgetDB::Action.find_all_by_rule_id(id)
         raise ActiveRecord::RecordNotFound if 0 == actions.length
-        rules.push(OpenStruct.new(:conditions => conditions,
-                                  :actions => actions))
+        rules.push(new_rule(conditions, actions))
         id = rule.next
       end
       return rules
+    end
+
+    # Creates a new rule given a list of Conditions and a list of Actions
+    def new_rule(conditions, actions)
+      raise "A rule requires at least one condition" if 1 > conditions.length
+      raise "A rule requires at least one action"    if 1 > actions.length
+      id = conditions.first.rule_id
+      (conditions + actions).each do |r|
+        raise "Conditions and actions must be of same rule" if id != r.rule_id
+      end
+      return OpenStruct.new(:conditions => conditions, :actions => actions)
+    end
+
+    # Updates the database with the specified rule
+    #
+    # Requires:
+    #   - rule was created by a previous call to new_rule
+    # Guarantees:
+    #   - The rule (including conditions and actions) will be updated in the db
+    def save_rule(rule)
     end
 
     def apply_rule(rule)
