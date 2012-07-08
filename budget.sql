@@ -76,7 +76,7 @@ CREATE TABLE accounts
     import varchar unique,
     type account_type,
     number varchar,
-    name varchar unique,
+    name varchar,
     tracked boolean
 );
 

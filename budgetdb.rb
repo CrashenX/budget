@@ -55,7 +55,7 @@ module BudgetDB
     ActiveRecord::Base.inheritance_column = "itype" # using type (default col)
     # whitelist for mass assignment of attributes
     attr_accessible :name, :tracked
-    validates_uniqueness_of :import, :name
+    validates_uniqueness_of :import
     has_many :budgets
     has_many :transactions
     has_many :statements
