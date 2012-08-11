@@ -81,6 +81,7 @@ module BudgetDB
 
   class Statement < ActiveRecord::Base
     # whitelist for mass assignment of attributes
+    attr_accessible
     validates_uniqueness_of :account_id, :scope => [:start_date, :end_date]
     belongs_to :account
   end
@@ -92,6 +93,8 @@ module BudgetDB
   end
 
   class Rule < ActiveRecord::Base
+    # whitelist for mass assignment of attributes
+    attr_accessible
     has_many :conditions
     has_many :rules
   end
