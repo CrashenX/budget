@@ -95,8 +95,138 @@ module BudgetDB
   class Rule < ActiveRecord::Base
     # whitelist for mass assignment of attributes
     attr_accessible
+    belongs_to :prev, :class_name => 'Rule', :foreign_key => 'prev_id'
+    belongs_to :next, :class_name => 'Rule', :foreign_key => 'next_id'
     has_many :conditions
-    has_many :rules
+    has_many :actions
+
+    def link_and_save()
+      check_constraints
+      ActiveRecord::Base.transaction do
+        curr_rule = BudgetDB::Rule.find_by_id(self.id)
+        if curr_rule && self.prev_id == curr_rule.prev_id
+          self.next_id = curr_rule.next_id
+          self.save
+        else
+          self.unlink
+          self.save
+          self.link
+        end
+      end
+    end
+
+    # Unlinks the rule in the database
+    #
+    # Requires:
+    #   - The existence of a valid database connection
+    #   - The rules table to be a fully-connected doubly-linked list with
+    #   exactly one head and one tail
+    #
+    # Guarantees:
+    #   - Self's neighbors will no longer point to the rule in the db
+    #   - Self's neighbors will point to each other in the db
+    #   - Self will be unchanged (both the object and in the database)
+    #   - The unlink will happen transactionally
+    #   - Nothing will be done if self is new (not in the database)
+    def unlink()
+      return if self.new_record?
+      ActiveRecord::Base.transaction do
+        curr_rule = BudgetDB::Rule.find_by_id(self.id)
+        if curr_rule.prev(true) # load prev from db
+          curr_rule.prev.next_id = curr_rule.next_id
+          curr_rule.prev.save
+        end
+        if curr_rule.next(true) # load next from db
+          curr_rule.next.prev_id = curr_rule.prev_id
+          curr_rule.next.save
+        end
+      end
+      return
+    end
+
+    # Links the rule in the database
+    #
+    # Requires:
+    #   - The existence of a valid database connection
+    #   - Self to exists in the database
+    #   - Self to be unlinked (no other rule points to it)
+    #   - The rules table to be a fully-connected doubly-linked list with
+    #   exactly one head and one tail (excluding self)
+    #   - The prev_id of self to be set to the id of the desired predessor,
+    #   nil if it is to be the first Rule
+    #
+    # Guarantees:
+    #   - Self will be linked in after the rule indicated by prev_id
+    #   - Self will be the first rule if prev_id is nil
+    #   - Self's prev_id will point to its predessor, nil if head
+    #   - Self's next_id will be set to the rule that follows it, nil if tail
+    #   - Self's prev_id and next_id will be updated in the database
+    #   - Self's prev_id and next_id will be the only fields updated
+    #   - The link will happen transactionally
+    def link()
+      ActiveRecord::Base.transaction do
+        curr_rule = BudgetDB::Rule.find_by_id(self.id)
+        raise ActiveRecord::RecordNotFound if nil == curr_rule
+         # Ensure unlinked rule is not mistaken as head or tail
+        curr_rule.prev_id = curr_rule.id
+        curr_rule.next_id = curr_rule.id
+        curr_rule.save
+        if 1 == BudgetDB::Rule.count # Only rule in db
+          self.prev_id = nil
+          self.next_id = nil
+        elsif nil == self.prev_id # prepend to ordered list
+          first_rule = BudgetDB::Rule.find_by_prev_id(nil)
+          raise ActiveRecord::RecordNotFound if nil == first_rule
+          first_rule.prev_id = self.id
+          self.next_id = first_rule.id
+          first_rule.save
+        else
+          prev_rule = BudgetDB::Rule.find_by_id(self.prev)
+          raise ActiveRecord::RecordNotFound if nil == prev_rule
+          prev_rule.next.prev_id = self.id
+          prev_rule.next.save
+          self.next_id = prev_rule.next_id
+          prev_rule.next_id = self.id
+          prev_rule.save
+        end
+        curr_rule.prev_id = self.prev_id
+        curr_rule.next_id = self.next_id
+        curr_rule.save
+      end
+    end
+
+    # Applies the rule to the transactions in the database
+    #
+    # Requires:
+    #   - The existence of a valid database connection
+    #   - At least one action and one condition
+    # Guarantees:
+    #   - Records that match the condition(s) will be updated by the action(s)
+    def apply()
+      check_constraints
+      where = Array.new
+      set   = Array.new
+      where.push conditions.map{|c| c.key+" "+c.op+" ?"}.join(" and ")
+      where += conditions.map{|c| c.value}
+      set.push actions.map{|c| c.key + " = ?"}.join(", ")
+      set += actions.map{|c| c.value}
+      BudgetDB::Transaction.update_all set, where
+    end
+
+    private
+
+    def check_constraints()
+      e0 = Exception.new("Rule should have at least one condition")
+      e1 = Exception.new("Rule should have at least one action")
+      e2 = Exception.new("Only one rule can have a NULL prev")
+      e3 = Exception.new("Only one rule can have a NULL next")
+      raise e0 if 0 >= conditions.length
+      raise e1 if 0 >= actions.length
+      if 0 < BudgetDB::Rule.count
+        raise e2 if 1 != BudgetDB::Rule.find_all_by_prev_id(nil).length
+        raise e3 if 1 != BudgetDB::Rule.find_all_by_next_id(nil).length
+      end
+    end
   end
 
   class Condition < ActiveRecord::Base
@@ -118,49 +248,36 @@ module BudgetDB
     # Load all of the rules (in order) from the database
     def load()
       rules = Array.new
-      first = BudgetDB::Rule.find_by_prev(nil)
+      ex = Exception.new("Rules should have at least 1 condition and 1 action")
+      first = BudgetDB::Rule.find_by_prev_id(nil)
       id = first ? first.id : nil
       while nil != id
         rule = BudgetDB::Rule.find_by_id(id)
         raise ActiveRecord::RecordNotFound if nil == rule
-        conditions = BudgetDB::Condition.find_all_by_rule_id(id)
-        raise ActiveRecord::RecordNotFound if 0 == conditions.length
-        actions = BudgetDB::Action.find_all_by_rule_id(id)
-        raise ActiveRecord::RecordNotFound if 0 == actions.length
-        rules.push(new_rule(conditions, actions))
+        raise ex if 0 >= rule.conditions.length || 0 >= rule.actions.length
+        rules.push(rule)
         id = rule.next
       end
       return rules
     end
 
-    # Creates a new rule given a list of Conditions and a list of Actions
-    def new_rule(conditions, actions)
-      raise "A rule requires at least one condition" if 1 > conditions.length
-      raise "A rule requires at least one action"    if 1 > actions.length
-      id = conditions.first.rule_id
-      (conditions + actions).each do |r|
-        raise "Conditions and actions must be of same rule" if id != r.rule_id
-      end
-      return OpenStruct.new(:conditions => conditions, :actions => actions)
-    end
-
-    # Updates the database with the specified rule
+    # Commits each rule to the database
     #
     # Requires:
-    #   - rule was created by a previous call to new_rule
+    #   - Rule was created by a previous call to new_rule
     # Guarantees:
     #   - The rule (including conditions and actions) will be updated in the db
-    def save_rule(rule)
+    def save(rules)
     end
 
-    def apply_rule(rule)
-      where = Array.new
-      set   = Array.new
-      where.push rule.conditions.map{|c| c.key+" "+c.op+" ?"}.join(" and ")
-      where += rule.conditions.map{|c| c.value}
-      set.push rule.actions.map{|c| c.key + " = ?"}.join(", ")
-      set += rule.actions.map{|c| c.value}
-      BudgetDB::Transaction.update_all set, where
+    # Applies the rules to the transactions in the database
+    #
+    # Requires:
+    #   - Rules contain at least one action and one condition
+    # Guarantees:
+    #   - Records that match the condition(s) will be updated by the action(s)
+    def apply(rules)
+      rules.map{|r| r.apply}
     end
   end
 

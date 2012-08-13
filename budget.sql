@@ -127,8 +127,8 @@ CREATE TABLE allotments
 CREATE TABLE rules
 (
     id serial primary key,
-    prev integer references rules,
-    next integer references rules
+    prev_id integer references rules,
+    next_id integer references rules
 );
 
 CREATE TABLE conditions
