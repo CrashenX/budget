@@ -182,10 +182,12 @@ module BudgetDB
           self.next_id = first_rule.id
           first_rule.save
         else
-          prev_rule = BudgetDB::Rule.find_by_id(self.prev)
+          prev_rule = BudgetDB::Rule.find_by_id(self.prev_id)
           raise ActiveRecord::RecordNotFound if nil == prev_rule
-          prev_rule.next.prev_id = self.id
-          prev_rule.next.save
+          if(prev_rule.next)
+            prev_rule.next.prev_id = self.id
+            prev_rule.next.save
+          end
           self.next_id = prev_rule.next_id
           prev_rule.next_id = self.id
           prev_rule.save
