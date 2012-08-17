@@ -21,20 +21,21 @@ require 'pp'
 
 module BudgetDB
   # Connect to the database
-  def self.connect(password, db = "budget")
+  def self.connect(password, username = `whoami`.strip, database = "budget")
     ActiveRecord::Base.logger = Logger.new("db.log")
     begin
       ActiveRecord::Base.establish_connection(
         :adapter  => "postgresql",
         :host     => "localhost",
-        :username => `whoami`.strip,
+        :username => username,
         :password => password,
-        :database => "budget"
+        :database => database
       )
       Account.table_exists? # Force connection now
     rescue
       raise
     end
+    return
   end
 
   # Save the database
