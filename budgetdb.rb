@@ -101,6 +101,13 @@ module BudgetDB
     has_many :conditions
     has_many :actions
 
+    def destroy()
+        self.unlink
+        self.conditions.map {|c| c.delete}
+        self.actions.map {|a| a.delete}
+        self.delete
+    end
+
     def link_and_save()
       check_constraints
       ActiveRecord::Base.transaction do
