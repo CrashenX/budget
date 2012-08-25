@@ -1,0 +1,25 @@
+# table|account_id|start_date|end_date|balance
+statement|0123abc3210|20110101|20121231|-1,000,000.00
+statement|abc 123 abc|20121231|20131201|-0.00
+# table|id|type|number
+account|0123abc3210|CREDITCARD|0123abc3210
+account|abc 123 abc|SAVINGS|abc 123 abc
+# table|id|account_id|date|type|amount|description
+transaction|I like turtles 0|0123abc3210|20120118|DEBIT|-1,000,000.00|Transaction 0
+transaction|I like turtles 1|abc 123 abc|20120207|CREDIT|10.00|Transaction 1
+transaction|I like turtles 2|abc 123 abc|20120322|DIRECTDEP|10.00|Transaction 2
+transaction|I like turtles 3|abc 123 abc|20120415|INT|10.00|Transaction 3
+transaction|I like turtles 4|abc 123 abc|20120515|XFER|-5.00|Transaction 4
+transaction|I like turtles 5|abc 123 abc|20120614|CHECK|-10.00|Transaction 5
+transaction|I like turtles 6|abc 123 abc|20120714|POS|-10.00|Transaction 6
+transaction|I like turtles 7|abc 123 abc|20120825|ATM|-5.00|Transaction 7
+# table|account_id|name|carryover|balance
+budget|abc 123 abc|Emergency|1|0.00
+budget|abc 123 abc|Household Goods & Groceries|1|0.00
+budget|abc 123 abc|Auto|1|0.00
+budget|abc 123 abc|Invest|1|0.00
+budget|abc 123 abc|Bills|1|0.00
+budget|abc 123 abc|Allowance|1|0.00
+budget|abc 123 abc|Travel|1|0.00
+budget|abc 123 abc|Home Improvement|1|0.00
+budget|abc 123 abc|Gifts|1|0.00

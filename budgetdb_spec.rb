@@ -74,3 +74,28 @@ describe BudgetDB::Rule do
     end
   end
 end
+
+describe BudgetDB::Records do
+  # TODO: Add more robust tests that are not dependent on specific data set
+  before :all do
+    @db = BudgetDB.connect("rspec", "rspec", "budgettest")
+    ActiveRecord::Base.connection.execute(IO.read("./budget.sql"))
+    @records = BudgetDB::Records.new
+  end
+  after :all do
+    ActiveRecord::Base.connection.execute(IO.read("./drop.sql"))
+  end
+  describe "#load" do
+    it "loads statements, accounts, transactions, and budgets" do
+      count = @records.load("budgetdb_spec.records")
+      count.should eql 21
+    end
+    it "inserts loaded records into the database" do
+      @records.save
+      BudgetDB::Statement.all.length.should eql 2
+      BudgetDB::Account.all.length.should eql 2
+      BudgetDB::Transaction.all.length.should eql 8
+      BudgetDB::Budget.all.length.should eql 9
+    end
+  end
+end
