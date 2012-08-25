@@ -343,6 +343,7 @@ module BudgetDB
       end
       file.close
       establish_relationships
+      return @records.length
     end
 
     # Save the loaded records to the database
