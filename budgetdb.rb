@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env ruby1.9.1
 # Library to load accounts, transactions, & statements into a budget db
 # Copyright (C) 2012 Jesse J. Cook
 #
