@@ -13,13 +13,13 @@ transaction|I like turtles 4|abc 123 abc|20120515|XFER|-5.00|Transaction 4
 transaction|I like turtles 5|abc 123 abc|20120614|CHECK|-10.00|Transaction 5
 transaction|I like turtles 6|abc 123 abc|20120714|POS|-10.00|Transaction 6
 transaction|I like turtles 7|abc 123 abc|20120825|ATM|-5.00|Transaction 7
-# table|account_id|name|carryover|balance
-budget|abc 123 abc|Emergency|1|0.00
-budget|abc 123 abc|Household Goods & Groceries|1|0.00
-budget|abc 123 abc|Auto|1|0.00
-budget|abc 123 abc|Invest|1|0.00
-budget|abc 123 abc|Bills|1|0.00
-budget|abc 123 abc|Allowance|1|0.00
-budget|abc 123 abc|Travel|1|0.00
-budget|abc 123 abc|Home Improvement|1|0.00
-budget|abc 123 abc|Gifts|1|0.00
+# table|name|carryover|balance
+budget|Emergency|1|0.00
+budget|Household Goods & Groceries|1|0.00
+budget|Auto|1|0.00
+budget|Invest|1|0.00
+budget|Bills|1|0.00
+budget|Allowance|1|0.00
+budget|Travel|1|0.00
+budget|Home Improvement|1|0.00
+budget|Gifts|1|0.00

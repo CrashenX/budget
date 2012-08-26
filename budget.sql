@@ -83,7 +83,6 @@ CREATE TABLE accounts
 CREATE TABLE budgets
 (
     id serial primary key,
-    account_id integer references accounts,
     name varchar unique,
     carryover boolean,
     balance money
