@@ -49,11 +49,11 @@ CREATE TYPE recur_type AS ENUM
 CREATE TYPE condition_key AS ENUM
 (
     'account_id',
-    'transaction_id',
-    'date',
-    'type',
     'amount',
-    'description'
+    'date',
+    'description',
+    'id',
+    'type'
 );
 
 CREATE TYPE action_key AS ENUM
