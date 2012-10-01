@@ -67,7 +67,7 @@ CREATE TYPE operator AS ENUM
     '<=',
     '>=',
     '=',
-    'LIKE'
+    '~*'
 );
 
 CREATE TABLE accounts
