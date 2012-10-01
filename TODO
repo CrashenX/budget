@@ -1,3 +1,4 @@
-Triggers:
-  Add trigger rules to db much in the same way budgets are added.
-  Update triggers.c to leverage rules in the database
+Multiple budgets per transaction:
+  - Remove budget_id from transactions
+  - Create table with transaction_id, budget_id, and amount
+  - All rows with same transaction_id should add up to transaction amount
