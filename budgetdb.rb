@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 require 'active_record'
+require 'logger'
 require 'ostruct'
 require 'pp'
 
@@ -53,7 +54,7 @@ module BudgetDB
   end
 
   class Account < ActiveRecord::Base
-    ActiveRecord::Base.inheritance_column = "itype" # using type (default col)
+    ActiveRecord::Base.set_inheritance_column "itype" # using type (default col)
     # whitelist for mass assignment of attributes
     attr_accessible :name, :tracked
     validates_uniqueness_of :import
@@ -70,7 +71,7 @@ module BudgetDB
   end
 
   class Transaction < ActiveRecord::Base
-    ActiveRecord::Base.inheritance_column = "itype" # using type (default col)
+    ActiveRecord::Base.set_inheritance_column "itype" # using type (default col)
     # whitelist for mass assignment of attributes
     attr_accessible :display
     validates_uniqueness_of :import
@@ -330,7 +331,7 @@ module BudgetDB
           if '_id' == cols[i][-3,3] # gather imported fks for conversion
             fkeys.push([cols[i][0...-3], record[i]])
           else
-            row.write_attribute(cols[i], record[i])
+            row.send(cols[i] + "=", record[i])
           end
         end
         key = add_record(row)
