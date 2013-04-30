@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-require_relative 'budgetdb'
+require_relative '../budgetdb'
 
 describe BudgetDB::Rule do
   before :all do
@@ -87,7 +87,7 @@ describe BudgetDB::Records do
   end
   describe "#load" do
     it "loads statements, accounts, transactions, and budgets" do
-      count = @records.load("budgetdb_spec.records")
+      count = @records.load("./spec/budgetdb_spec.records")
       count.should eql 21
     end
     it "inserts loaded records into the database" do
