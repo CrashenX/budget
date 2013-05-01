@@ -11,8 +11,8 @@ psql budget jesse
   CREATE FUNCTION set_budget() RETURNS trigger AS '/tmp/budget_triggers.so' LANGUAGE C; 
 
 irb
-  load './budgetdb.rb'; db = BudgetDB.connect(""); records = BudgetDB::Records.new; records.load("records.txt"); records.load("budgets.txt")
-  load './budgetdb.rb'; db = BudgetDB.connect(""); rules = BudgetDB::Classify.new; rules.load
+  load './budgetdb.rb'; db = BudgetDB.connect(""); records = BudgetDB::Records.new; records.load("data/records.txt"); records.load("data/budgets.txt")
+  load './budgetdb.rb'; db = BudgetDB.connect(""); c = BudgetDB::Classify.new; rules = c.load; c.apply(rules)
   records.save
 
 vim triggers.c
