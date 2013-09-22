@@ -17,3 +17,15 @@ irb
 
 vim triggers.c
   :! gcc -I/usr/include/postgresql/8.4/server -fpic -shared % -o budget_triggers.so
+
+
+2013-09-14 Steps to Use:
+
+  psql budget jesse < drop.sql
+  psql budget jesse < budget.sql
+  irb
+  load './budgetdb.rb'; db = BudgetDB.connect(""); records = BudgetDB::Records.new; records.load("data/records.txt"); records.load("data/budgets.txt")
+  records.save
+  quit
+  ruby rules.rb # hardlink to data/rules.rb
+  select date,amount,budget_id,type,description,display from transactions where account_id = 5 and display is null order by date;

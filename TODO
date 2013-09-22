@@ -2,3 +2,6 @@ Multiple budgets per transaction:
   - Remove budget_id from transactions
   - Create table with transaction_id, budget_id, and amount
   - All rows with same transaction_id should add up to transaction amount
+
+Apply rules:
+  - Remove effects of applied rules that no longer exist

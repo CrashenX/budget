@@ -53,6 +53,7 @@ CREATE TYPE condition_key AS ENUM
     'date',
     'description',
     'id',
+    'import',
     'type'
 );
 

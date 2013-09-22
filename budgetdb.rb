@@ -19,6 +19,7 @@ require 'active_record'
 require 'logger'
 require 'ostruct'
 require 'pp'
+#require 'ofx'
 
 module BudgetDB
   # Connect to the database
@@ -302,6 +303,15 @@ module BudgetDB
     def print()
       pp @records
     end
+
+    # Import all of the records from the stored ofx files
+    #def import(path = "./ofx")
+    #  ofx_files = Dir["#{path}/*"].map{|f| File.basename(f)}
+    #  ofx_files.each do |f|
+    #    ofx = OFX(f)
+    #    p ofx
+    #  end
+    #end
 
     # Load all of the transactions from the specified file
     def load(path = "records.txt")
